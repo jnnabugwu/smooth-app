@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
+import 'package:iso_countries/iso_countries.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:smooth_app/data_models/github_contributors_model.dart';
@@ -27,18 +28,21 @@ import 'package:smooth_app/query/product_query.dart';
 
 /// Display of "Contribute" for the preferences page.
 class UserPreferencesContribute extends AbstractUserPreferences {
+      
   UserPreferencesContribute({
     required final BuildContext context,
     required final UserPreferences userPreferences,
     required final AppLocalizations appLocalizations,
     required final ThemeData themeData,
-  }) : super(
+  }) : countryCode = userPreferences.userCountryCode,
+  super(
           context: context,
           userPreferences: userPreferences,
           appLocalizations: appLocalizations,
           themeData: themeData,
         );
-
+  final String? countryCode;
+        
   @override
   PreferencePageType getPreferencePageType() => PreferencePageType.CONTRIBUTE;
 
@@ -109,11 +113,11 @@ class UserPreferencesContribute extends AbstractUserPreferences {
               UserPreferencesListTile.getTintedIcon(Icons.open_in_new, context),
           externalLink: true,
         ),
-       if(CountryWikiLinks().wikiLinks.containsKey(userPreferences.userCountryCode))
+       if(TmpCountryWikiLinks().wikiLinks.containsKey(IsoCountries.isoCountriesForLocale(countryCode)))
           _getListTile(
               'Help improve Open Food Facts in your country',
               () async => LaunchUrlHelper.launchURL(TmpCountryWikiLinks()
-                  .wikiLinks[userPreferences.userCountryCode]!),
+                  .wikiLinks[IsoCountries.isoCountriesForLocale(countryCode)]!),
               Icons.language,
               icon: UserPreferencesListTile.getTintedIcon(
               Icons.open_in_new,
