@@ -28,21 +28,20 @@ import 'package:smooth_app/query/product_query.dart';
 
 /// Display of "Contribute" for the preferences page.
 class UserPreferencesContribute extends AbstractUserPreferences {
-      
   UserPreferencesContribute({
     required final BuildContext context,
     required final UserPreferences userPreferences,
     required final AppLocalizations appLocalizations,
     required final ThemeData themeData,
-  }) : countryCode = userPreferences.userCountryCode,
-  super(
+  })  : countryCode = userPreferences.userCountryCode,
+        super(
           context: context,
           userPreferences: userPreferences,
           appLocalizations: appLocalizations,
           themeData: themeData,
         );
   final String? countryCode;
-        
+
   @override
   PreferencePageType getPreferencePageType() => PreferencePageType.CONTRIBUTE;
 
@@ -113,15 +112,18 @@ class UserPreferencesContribute extends AbstractUserPreferences {
               UserPreferencesListTile.getTintedIcon(Icons.open_in_new, context),
           externalLink: true,
         ),
-       if(TmpCountryWikiLinks().wikiLinks.containsKey(IsoCountries.isoCountriesForLocale(countryCode)))
+        if (TmpCountryWikiLinks()
+            .wikiLinks
+            .containsKey('United States'))
           _getListTile(
               'Help improve Open Food Facts in your country',
               () async => LaunchUrlHelper.launchURL(TmpCountryWikiLinks()
-                  .wikiLinks[IsoCountries.isoCountriesForLocale(countryCode)]!),
+                  .wikiLinks['United States']!),
               Icons.language,
               icon: UserPreferencesListTile.getTintedIcon(
-              Icons.open_in_new,
-              context,),
+                Icons.open_in_new,
+                context,
+              ),
               externalLink: true),
         if (GlobalVars.appStore.getEnrollInBetaURL() != null)
           _getListTile(
@@ -343,6 +345,12 @@ class UserPreferencesContribute extends AbstractUserPreferences {
       labels: <String>[title],
       builder: (_) => tile,
     );
+  }
+  Future<String> returnCountry() async  {
+    print('Getting country');
+    final Country country = await IsoCountries.isoCountryForCodeForLocale(countryCode);
+    print(country.name);
+    return country.name;
   }
 }
 

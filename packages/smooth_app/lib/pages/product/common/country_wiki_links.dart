@@ -1,4 +1,4 @@
-  // TODO(monsieurtanuki): the code is to be moved to openfoodfacts-dart
+// TODO(monsieurtanuki): the code is to be moved to openfoodfacts-dart
 class TmpCountryWikiLinks {
   final Map<String, String> wikiLinks = <String, String>{
     'Argentina': 'https://wiki.openfoodfacts.org/Country_Support_-_Argentina',
