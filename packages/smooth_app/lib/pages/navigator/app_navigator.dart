@@ -287,12 +287,12 @@ class _SmoothGoRouter {
             }
           } else if (path == _ExternalRoutes.MOBILE_APP_DOWNLOAD) {
             return AppRoutes.HOME;
-          } else if (path == _ExternalRoutes.FORGOT_PASSWORD) {
-            return AppRoutes.FORGOT_PASSWORD;
           } else if (path == _ExternalRoutes.GUIDE_NUTRISCORE_V2) {
             return AppRoutes.GUIDE_NUTRISCORE_V2;
           } else if (path == _ExternalRoutes.SIGNUP) {
             return AppRoutes.SIGNUP;
+          } else if (path == _ExternalRoutes.FORGOT_PASSWORD) {
+            return AppRoutes.FORGOT_PASSWORD;
           } else if (path != _InternalAppRoutes.HOME_PAGE) {
             externalLink = true;
           }
