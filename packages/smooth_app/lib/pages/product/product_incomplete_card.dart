@@ -6,6 +6,7 @@ import 'package:smooth_app/helpers/analytics_helper.dart';
 import 'package:smooth_app/pages/product/add_new_product_page.dart';
 import 'package:smooth_app/pages/product/product_field_editor.dart';
 import 'package:smooth_app/pages/product/simple_input_page_helpers.dart';
+import 'package:smooth_app/query/product_query.dart';
 
 /// "Incomplete product!" card to be displayed in product summary, if relevant.
 ///
@@ -21,6 +22,10 @@ class ProductIncompleteCard extends StatelessWidget {
   final bool isLoggedInMandatory;
 
   static bool isProductIncomplete(final Product product) {
+    if (product.productType != null &&
+        product.productType != ProductType.food) {
+      return false;
+    }
     bool checkScores = true;
     if (_isNutriscoreNotApplicable(product)) {
       AnalyticsHelper.trackEvent(
@@ -95,7 +100,11 @@ class ProductIncompleteCard extends StatelessWidget {
       child: ElevatedButton.icon(
         label: Padding(
           padding: const EdgeInsets.symmetric(vertical: SMALL_SPACE),
-          child: Text(appLocalizations.hey_incomplete_product_message),
+          child: Text(
+            (product.productType ?? ProductType.food).getRoadToScoreLabel(
+              appLocalizations,
+            ),
+          ),
         ),
         icon: const Icon(
           Icons.bolt,

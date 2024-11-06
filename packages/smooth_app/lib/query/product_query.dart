@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:openfoodfacts/openfoodfacts.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:smooth_app/data_models/preferences/user_preferences.dart';
@@ -164,18 +165,26 @@ abstract class ProductQuery {
         comment: 'Test user for project smoothie',
       );
 
-  static late UriProductHelper uriProductHelper;
+  static late UriProductHelper _uriProductHelper;
+
+  /// Product helper only for prices.
+  static late UriProductHelper uriPricesHelper;
 
   static bool isLoggedIn() => OpenFoodAPIConfiguration.globalUser != null;
 
   /// Sets the query type according to the current [UserPreferences]
   static void setQueryType(final UserPreferences userPreferences) {
-    final bool queryTypeProd = userPreferences
-            .getFlag(UserPreferencesDevMode.userPreferencesFlagProd) ??
-        true;
-    uriProductHelper = queryTypeProd
-        ? uriHelperFoodProd
-        : getTestUriProductHelper(userPreferences);
+    UriProductHelper getProductHelper(final String flagProd) =>
+        userPreferences.getFlag(flagProd) ?? true
+            ? uriHelperFoodProd
+            : getTestUriProductHelper(userPreferences);
+
+    _uriProductHelper = getProductHelper(
+      UserPreferencesDevMode.userPreferencesFlagProd,
+    );
+    uriPricesHelper = getProductHelper(
+      UserPreferencesDevMode.userPreferencesFlagPriceProd,
+    );
   }
 
   /// Returns the standard test env, or the custom test env if relevant.
@@ -191,6 +200,42 @@ abstract class ProductQuery {
             userInfoForPatch: HttpHelper.userInfoForTest,
             domain: testEnvDomain,
           );
+  }
+
+  static ProductType? extractProductType(
+    final UriProductHelper uriProductHelper,
+  ) {
+    final String domain = uriProductHelper.domain;
+    for (final ProductType productType in ProductType.values) {
+      if (domain.contains(productType.getDomain())) {
+        return productType;
+      }
+    }
+    return null;
+  }
+
+  // TODO(monsieurtanuki): make the parameter "required"
+  static UriProductHelper getUriProductHelper({
+    required final ProductType? productType,
+  }) {
+    final UriProductHelper currentUriProductHelper = _uriProductHelper;
+    if (productType == null) {
+      return currentUriProductHelper;
+    }
+    final ProductType? currentProductType =
+        extractProductType(currentUriProductHelper);
+    if (currentProductType == null) {
+      return currentUriProductHelper;
+    }
+    if (currentProductType == productType) {
+      return currentUriProductHelper;
+    }
+    return UriProductHelper(
+      domain: currentUriProductHelper.domain.replaceFirst(
+        currentProductType.getDomain(),
+        productType.getDomain(),
+      ),
+    );
   }
 
   static List<ProductField> get fields => const <ProductField>[
@@ -244,5 +289,33 @@ abstract class ProductQuery {
         ProductField.ORIGINS,
         ProductField.WEBSITE,
         ProductField.OBSOLETE,
+        ProductField.OWNER_FIELDS,
       ];
+}
+
+extension ProductTypeExtension on ProductType {
+  String getDomain() => switch (this) {
+        ProductType.food => 'openfoodfacts',
+        ProductType.beauty => 'openbeautyfacts',
+        ProductType.petFood => 'openpetfoodfacts',
+        ProductType.product => 'openproductsfacts',
+      };
+
+  String getLabel(final AppLocalizations appLocalizations) => switch (this) {
+        ProductType.food => appLocalizations.product_type_label_food,
+        ProductType.beauty => appLocalizations.product_type_label_beauty,
+        ProductType.petFood => appLocalizations.product_type_label_pet_food,
+        ProductType.product => appLocalizations.product_type_label_product,
+      };
+
+  String getRoadToScoreLabel(final AppLocalizations appLocalizations) =>
+      switch (this) {
+        ProductType.food => appLocalizations.hey_incomplete_product_message,
+        ProductType.beauty =>
+          appLocalizations.hey_incomplete_product_message_beauty,
+        ProductType.petFood =>
+          appLocalizations.hey_incomplete_product_message_pet_food,
+        ProductType.product =>
+          appLocalizations.hey_incomplete_product_message_product,
+      };
 }

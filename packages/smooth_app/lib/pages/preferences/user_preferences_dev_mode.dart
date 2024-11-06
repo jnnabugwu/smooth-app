@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:openfoodfacts/openfoodfacts.dart';
@@ -9,7 +8,6 @@ import 'package:smooth_app/background/background_task_badge.dart';
 import 'package:smooth_app/background/background_task_language_refresh.dart';
 import 'package:smooth_app/data_models/continuous_scan_model.dart';
 import 'package:smooth_app/data_models/news_feed/newsfeed_provider.dart';
-import 'package:smooth_app/data_models/preferences/user_preferences.dart';
 import 'package:smooth_app/data_models/product_list.dart';
 import 'package:smooth_app/database/dao_osm_location.dart';
 import 'package:smooth_app/database/dao_product.dart';
@@ -27,7 +25,7 @@ import 'package:smooth_app/pages/preferences/user_preferences_item.dart';
 import 'package:smooth_app/pages/preferences/user_preferences_page.dart';
 import 'package:smooth_app/pages/preferences/user_preferences_search_page.dart';
 import 'package:smooth_app/pages/preferences/user_preferences_widgets.dart';
-import 'package:smooth_app/pages/scan/search_page.dart';
+import 'package:smooth_app/pages/search/search_page.dart';
 import 'package:smooth_app/query/product_query.dart';
 
 /// Full page display of "dev mode" for the preferences page.
@@ -36,18 +34,14 @@ import 'package:smooth_app/query/product_query.dart';
 /// Settings => FAQ => Develop => Clicking switch
 class UserPreferencesDevMode extends AbstractUserPreferences {
   UserPreferencesDevMode({
-    required final BuildContext context,
-    required final UserPreferences userPreferences,
-    required final AppLocalizations appLocalizations,
-    required final ThemeData themeData,
-  }) : super(
-          context: context,
-          userPreferences: userPreferences,
-          appLocalizations: appLocalizations,
-          themeData: themeData,
-        );
+    required super.context,
+    required super.userPreferences,
+    required super.appLocalizations,
+    required super.themeData,
+  });
 
   static const String userPreferencesFlagProd = '__devWorkingOnProd';
+  static const String userPreferencesFlagPriceProd = '__devWorkingOnPricesProd';
   static const String userPreferencesTestEnvDomain = '__testEnvHost';
   static const String userPreferencesFlagEditIngredients = '__editIngredients';
   static const String userPreferencesFlagBoostedComparison =
@@ -269,6 +263,34 @@ class UserPreferencesDevMode extends AbstractUserPreferences {
           ),
           onTap: () async => _changeTestEnvDomain(),
         ),
+        const UserPreferencesItemSection(
+          label: 'Prices Server configuration',
+        ),
+        UserPreferencesItemTile(
+          title: 'Switch between prices.openfoodfacts.org (PROD) and test env',
+          trailing: DropdownButton<bool>(
+            value:
+                userPreferences.getFlag(userPreferencesFlagPriceProd) ?? true,
+            elevation: 16,
+            onChanged: (bool? newValue) async {
+              await userPreferences.setFlag(
+                userPreferencesFlagPriceProd,
+                newValue,
+              );
+              ProductQuery.setQueryType(userPreferences);
+            },
+            items: const <DropdownMenuItem<bool>>[
+              DropdownMenuItem<bool>(
+                value: true,
+                child: Text('PROD'),
+              ),
+              DropdownMenuItem<bool>(
+                value: false,
+                child: Text('TEST'),
+              ),
+            ],
+          ),
+        ),
         UserPreferencesItemSection(
           label: appLocalizations.dev_mode_section_news,
         ),
@@ -421,7 +443,7 @@ class UserPreferencesDevMode extends AbstractUserPreferences {
               context,
               MaterialPageRoute<OsmLocation>(
                 builder: (BuildContext context) => SearchPage(
-                  const SearchLocationHelper(),
+                  SearchLocationHelper(),
                   preloadedList: preloadedList,
                   autofocus: false,
                 ),

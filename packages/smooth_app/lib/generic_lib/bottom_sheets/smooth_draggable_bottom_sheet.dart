@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:provider/provider.dart';
 
 class SmoothDraggableBottomSheet extends StatefulWidget {
   const SmoothDraggableBottomSheet({
-    Key? key,
+    super.key,
     required this.headerBuilder,
     required this.headerHeight,
     required this.bodyBuilder,
@@ -13,8 +14,7 @@ class SmoothDraggableBottomSheet extends StatefulWidget {
     this.animationController,
     this.bottomSheetColor,
     this.draggableScrollableController,
-  })  : assert(maxHeightFraction > 0.0 && maxHeightFraction <= 1.0),
-        super(key: key);
+  }) : assert(maxHeightFraction > 0.0 && maxHeightFraction <= 1.0);
 
   final double initHeightFraction;
   final double maxHeightFraction;
@@ -152,8 +152,7 @@ class _SmoothDraggableContent extends StatefulWidget {
     required this.headerHeight,
     required this.headerBuilder,
     required this.bodyBuilder,
-    Key? key,
-  }) : super(key: key);
+  });
 
   final WidgetBuilder headerBuilder;
   final double headerHeight;
@@ -174,20 +173,23 @@ class _SmoothDraggableContentState extends State<_SmoothDraggableContent> {
   Widget build(BuildContext context) {
     return Scrollbar(
       controller: widget.scrollController,
-      child: CustomScrollView(
-        cacheExtent: widget.cacheExtent,
-        key: _contentKey,
-        controller: widget.scrollController,
-        slivers: <Widget>[
-          SliverPersistentHeader(
-            pinned: true,
-            delegate: _SliverHeader(
-              child: widget.headerBuilder(context),
-              height: widget.headerHeight,
+      child: ChangeNotifierProvider<ScrollController>.value(
+        value: widget.scrollController,
+        child: CustomScrollView(
+          cacheExtent: widget.cacheExtent,
+          key: _contentKey,
+          controller: widget.scrollController,
+          slivers: <Widget>[
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: _SliverHeader(
+                child: widget.headerBuilder(context),
+                height: widget.headerHeight,
+              ),
             ),
-          ),
-          widget.bodyBuilder(context),
-        ],
+            widget.bodyBuilder(context),
+          ],
+        ),
       ),
     );
   }
