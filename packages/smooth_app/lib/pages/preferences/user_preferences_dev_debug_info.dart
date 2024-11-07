@@ -12,7 +12,9 @@ import 'package:smooth_app/widgets/smooth_app_bar.dart';
 import 'package:smooth_app/widgets/smooth_scaffold.dart';
 
 class UserPreferencesDebugInfo extends StatefulWidget {
-  const UserPreferencesDebugInfo({Key? key}) : super(key: key);
+  const UserPreferencesDebugInfo({
+    super.key,
+  });
 
   @override
   State<UserPreferencesDebugInfo> createState() =>
@@ -27,10 +29,12 @@ class _UserPreferencesDebugInfoState extends State<UserPreferencesDebugInfo> {
     'IsLoggedIn': ProductQuery.isLoggedIn().toString(),
     'UUID': OpenFoodAPIConfiguration.uuid.toString(),
     'Matomo Visitor ID': AnalyticsHelper.matomoVisitorId,
-    'QueryType': ProductQuery.uriProductHelper.isTestMode
+    'QueryType': ProductQuery.getUriProductHelper(productType: ProductType.food)
+            .isTestMode
         ? 'QueryType.TEST'
         : 'QueryType.PROD',
-    'Domain': ProductQuery.uriProductHelper.domain,
+    'Domain':
+        ProductQuery.getUriProductHelper(productType: ProductType.food).domain,
     'UserAgent-name': '${OpenFoodAPIConfiguration.userAgent?.name}',
     'UserAgent-system': '${OpenFoodAPIConfiguration.userAgent?.system}',
   };

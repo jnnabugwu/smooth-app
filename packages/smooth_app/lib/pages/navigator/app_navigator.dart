@@ -1,5 +1,5 @@
 import 'package:collection/collection.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:openfoodfacts/openfoodfacts.dart';
 import 'package:provider/provider.dart';
@@ -15,8 +15,8 @@ import 'package:smooth_app/pages/onboarding/onboarding_flow_navigator.dart';
 import 'package:smooth_app/pages/preferences/user_preferences_page.dart';
 import 'package:smooth_app/pages/product/add_new_product_page.dart';
 import 'package:smooth_app/pages/product/edit_product_page.dart';
-import 'package:smooth_app/pages/product/new_product_page.dart';
 import 'package:smooth_app/pages/product/product_loader_page.dart';
+import 'package:smooth_app/pages/product/product_page/new_product_page.dart';
 import 'package:smooth_app/pages/scan/carousel/scan_carousel_manager.dart';
 import 'package:smooth_app/pages/search/search_page.dart';
 import 'package:smooth_app/pages/search/search_product_helper.dart';
@@ -37,13 +37,12 @@ import 'package:smooth_app/query/product_query.dart';
 /// /!\ [GoRouter] doesn't support [maybePop] or returning a result from a push.
 class AppNavigator extends InheritedWidget {
   AppNavigator({
-    Key? key,
+    super.key,
     List<NavigatorObserver>? observers,
-    required Widget child,
-  })  : _router = _SmoothGoRouter(
+    required super.child,
+  }) : _router = _SmoothGoRouter(
           observers: observers,
-        ),
-        super(key: key, child: child);
+        );
 
   // GoRouter is never accessible directly
   final _SmoothGoRouter _router;
@@ -73,8 +72,22 @@ class AppNavigator extends InheritedWidget {
     _router.router.pushReplacement(routeName, extra: extra);
   }
 
-  void pop([dynamic result]) {
-    _router.router.pop(result);
+  /// Remove all the screens from the stack
+  void clearStack() {
+    while (_router.router.canPop() == true) {
+      _router.router.pop();
+    }
+  }
+
+  /// Returns [true] if the pop was successful
+  /// Returns [false] if there is nothing to pop (= no history)
+  bool pop([dynamic result]) {
+    try {
+      _router.router.pop(result);
+      return true;
+    } on GoError catch (_) {
+      return false;
+    }
   }
 }
 
@@ -230,16 +243,18 @@ class _SmoothGoRouter {
               },
             ),
             GoRoute(
-              path: _InternalAppRoutes.EXTERNAL_PAGE,
-              builder: (BuildContext context, GoRouterState state) {
-                return ExternalPage(path: state.uri.queryParameters['path']!);
-              },
-            ),
-            GoRoute(
               path: _InternalAppRoutes.SIGNUP_PAGE,
               builder: (_, __) => const SignUpPage(),
             )
           ],
+        ),
+        GoRoute(
+          path: '/${_InternalAppRoutes.EXTERNAL_PAGE}',
+          builder: (BuildContext context, GoRouterState state) {
+            return ExternalPage(
+              path: Uri.decodeFull(state.uri.queryParameters['path']!),
+            );
+          },
         ),
       ],
       redirect: (BuildContext context, GoRouterState state) {
@@ -287,7 +302,7 @@ class _SmoothGoRouter {
               externalLink = true;
             }
           } else if (path == _ExternalRoutes.MOBILE_APP_DOWNLOAD) {
-            return AppRoutes.HOME;
+            return AppRoutes.HOME();
           } else if (path == _ExternalRoutes.GUIDE_NUTRISCORE_V2) {
             return AppRoutes.GUIDE_NUTRISCORE_V2;
           } else if (path == _ExternalRoutes.SIGNUP) {
@@ -422,7 +437,8 @@ class AppRoutes {
   AppRoutes._();
 
   // Home page (or walkthrough during the onboarding)
-  static String get HOME => _InternalAppRoutes.HOME_PAGE;
+  static String HOME({bool redraw = false}) =>
+      '${_InternalAppRoutes.HOME_PAGE}?redraw:$redraw';
 
   // Product details (a [Product] is mandatory in the extra)
   static String PRODUCT(
@@ -461,5 +477,5 @@ class AppRoutes {
 
   // Open an external link (where path is relative to the OFF website)
   static String EXTERNAL(String path) =>
-      '/${_InternalAppRoutes.EXTERNAL_PAGE}/?path=$path';
+      '/${_InternalAppRoutes.EXTERNAL_PAGE}?path=${Uri.encodeFull(path)}';
 }

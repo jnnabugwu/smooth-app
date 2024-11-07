@@ -16,7 +16,12 @@ import 'package:smooth_app/widgets/smooth_scaffold.dart';
 
 /// Page that displays the latest proofs of the current user.
 class PricesProofsPage extends StatefulWidget {
-  const PricesProofsPage();
+  const PricesProofsPage({
+    required this.selectProof,
+  });
+
+  /// Do we want to select a proof (true), or just to see its details (false)?
+  final bool selectProof;
 
   @override
   State<PricesProofsPage> createState() => _PricesProofsPageState();
@@ -46,7 +51,7 @@ class _PricesProofsPageState extends State<PricesProofsPage>
             icon: const Icon(Icons.open_in_new),
             onPressed: () async => LaunchUrlHelper.launchURL(
               OpenPricesAPIClient.getUri(
-                path: 'app/dashboard/proofs',
+                path: 'dashboard/proofs',
                 uriHelper: ProductQuery.uriPricesHelper,
               ).toString(),
             ),
@@ -119,15 +124,21 @@ class _PricesProofsPageState extends State<PricesProofsPage>
                               );
                             }
                             return InkWell(
-                              onTap: () async => Navigator.push<void>(
-                                context,
-                                MaterialPageRoute<void>(
-                                  builder: (BuildContext context) =>
-                                      PriceProofPage(
-                                    proof,
+                              onTap: () async {
+                                if (widget.selectProof) {
+                                  Navigator.of(context).pop(proof);
+                                  return;
+                                }
+                                return Navigator.push<void>(
+                                  context,
+                                  MaterialPageRoute<void>(
+                                    builder: (BuildContext context) =>
+                                        PriceProofPage(
+                                      proof,
+                                    ),
                                   ),
-                                ),
-                              ), // PriceProofPage
+                                );
+                              }, // PriceProofPage
                               child: _PriceProofImage(proof,
                                   squareSize: squareSize),
                             );
@@ -203,7 +214,8 @@ class _PriceProofImage extends StatelessWidget {
           imageProvider: NetworkImage(
             proof
                 .getFileUrl(
-                  uriProductHelper: ProductQuery.uriProductHelper,
+                  uriProductHelper: ProductQuery.uriPricesHelper,
+                  isThumbnail: true,
                 )
                 .toString(),
           ),

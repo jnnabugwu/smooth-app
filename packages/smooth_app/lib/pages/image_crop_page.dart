@@ -24,15 +24,23 @@ import 'package:smooth_app/pages/crop_parameters.dart';
 import 'package:smooth_app/pages/product_crop_helper.dart';
 
 /// Safely picks an image file from gallery or camera, regarding access denied.
-Future<XFile?> pickImageFile(final BuildContext context) async {
+Future<XFile?> pickImageFile(
+  final BuildContext context, {
+  final UserPictureSource? forcedSource,
+}) async {
   /// Picks an image file from gallery or camera.
   Future<XFile?> innerPickImageFile(
     final BuildContext context, {
     bool ignorePlatformException = false,
   }) async {
-    final UserPictureSource? source = await _getUserPictureSource(context);
-    if (source == null) {
-      return null;
+    final UserPictureSource? source;
+    if (forcedSource != null) {
+      source = forcedSource;
+    } else {
+      source = await _getUserPictureSource(context);
+      if (source == null) {
+        return null;
+      }
     }
     final ImagePicker picker = ImagePicker();
     if (source == UserPictureSource.GALLERY) {
@@ -257,6 +265,7 @@ Future<CropParameters?> confirmAndUploadNewPicture(
   final BuildContext context, {
   required final ImageField imageField,
   required final String barcode,
+  required final ProductType? productType,
   required final OpenFoodFactsLanguage language,
   required final bool isLoggedInMandatory,
 }) async =>
@@ -266,6 +275,7 @@ Future<CropParameters?> confirmAndUploadNewPicture(
         imageField: imageField,
         language: language,
         barcode: barcode,
+        productType: productType,
       ),
       isLoggedInMandatory: isLoggedInMandatory,
     );
@@ -275,8 +285,12 @@ Future<CropParameters?> confirmAndUploadNewImage(
   final BuildContext context, {
   required final CropHelper cropHelper,
   required final bool isLoggedInMandatory,
+  final UserPictureSource? forcedSource,
 }) async {
-  final XFile? fullPhoto = await pickImageFile(context);
+  final XFile? fullPhoto = await pickImageFile(
+    context,
+    forcedSource: forcedSource,
+  );
   if (fullPhoto == null) {
     return null;
   }
