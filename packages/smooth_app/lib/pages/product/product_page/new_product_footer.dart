@@ -118,19 +118,13 @@ class _ProductAddToListButton extends StatelessWidget {
 
   Future<bool?> _editList(BuildContext context, Product product) async {
     final AppLocalizations appLocalizations = AppLocalizations.of(context);
-    final SmoothColorsThemeExtension? extension =
-        Theme.of(context).extension<SmoothColorsThemeExtension>();
 
     showSmoothDraggableModalSheet(
       context: context,
       header: SmoothModalSheetHeader(
-        backgroundColor: extension!.primaryDark,
-        foregroundColor: Colors.white,
         prefix: const SmoothModalSheetHeaderPrefixIndicator(),
         title: appLocalizations.user_list_title,
-        suffix: const SmoothModalSheetHeaderCloseButton(
-          addPadding: true,
-        ),
+        suffix: const SmoothModalSheetHeaderCloseButton(),
       ),
       bodyBuilder: (BuildContext context) => AddProductToListContainer(
         barcode: product.barcode!,
@@ -160,19 +154,7 @@ class _ProductAddPriceButton extends StatelessWidget {
 
         return _ProductFooterFilledButton(
           label: appLocalizations.prices_add_a_price,
-          icon: switch (currency) {
-            Currency.GBP => const icons.AddPrice.britishPound(),
-            Currency.USD => const icons.AddPrice.dollar(),
-            Currency.EUR => const icons.AddPrice.euro(),
-            Currency.RUB => const icons.AddPrice.ruble(),
-            Currency.INR => const icons.AddPrice.rupee(),
-            Currency.CHF => const icons.AddPrice.swissFranc(),
-            Currency.TRY => const icons.AddPrice.turkishLira(),
-            Currency.UAH => const icons.AddPrice.ukrainianHryvnia(),
-            Currency.KRW => const icons.AddPrice.won(),
-            Currency.JPY => const icons.AddPrice.yen(),
-            _ => const icons.AddPrice.dollar(),
-          },
+          icon: icons.AddPrice(currency),
           onTap: () => _addAPrice(context, context.read<Product>()),
         );
       },
@@ -206,9 +188,9 @@ class _ProductEditButton extends StatelessWidget {
   Future<void> _editProduct(BuildContext context, Product product) async {
     ProductPageState.of(context).stopRobotoffQuestion();
 
-    AnalyticsHelper.trackEvent(
+    AnalyticsHelper.trackProductEvent(
       AnalyticsEvent.openProductEditPage,
-      barcode: product.barcode,
+      product: product,
     );
 
     await Navigator.push<void>(
@@ -245,22 +227,26 @@ class _ProductCompareButton extends StatelessWidget {
         tags.isNotEmpty &&
         tags.length == labels.length) {
       categoryTag = product.comparedToCategory;
-      if (categoryTag == null || blackListedCategories.contains(categoryTag)) {
+      if (categoryTag != null) {
+        for (int i = 0; i < tags.length; i++) {
+          if (categoryTag == tags[i]) {
+            categoryLabel = labels[i];
+            break;
+          }
+        }
+      }
+      if (categoryLabel == null ||
+          blackListedCategories.contains(categoryTag)) {
         // fallback algorithm
         int index = tags.length - 1;
         // cf. https://github.com/openfoodfacts/openfoodfacts-dart/pull/474
         // looking for the most detailed non blacklisted category
         categoryTag = tags[index];
+        categoryLabel = labels[index];
         while (blackListedCategories.contains(categoryTag) && index > 0) {
           index--;
           categoryTag = tags[index];
-        }
-      }
-      if (categoryTag != null) {
-        for (int i = 0; i < tags.length; i++) {
-          if (categoryTag == tags[i]) {
-            categoryLabel = labels[i];
-          }
+          categoryLabel = labels[index];
         }
       }
     }
@@ -347,18 +333,19 @@ class _ProductShareButton extends StatelessWidget {
   }
 
   Future<void> _shareProduct(BuildContext context, Product product) async {
-    AnalyticsHelper.trackEvent(
+    final ProductType productType = product.productType ?? ProductType.food;
+    AnalyticsHelper.trackProductEvent(
       AnalyticsEvent.shareProduct,
-      barcode: product.barcode,
+      product: product,
     );
     final AppLocalizations appLocalizations = AppLocalizations.of(context);
     // We need to provide a sharePositionOrigin to make the plugin work on ipad
     final RenderBox? box = context.findRenderObject() as RenderBox?;
     final String url = 'https://'
-        '${ProductQuery.getCountry().offTag}.openfoodfacts.org'
+        '${ProductQuery.getCountry().offTag}.${productType.getDomain()}.org'
         '/product/${product.barcode}';
     Share.share(
-      appLocalizations.share_product_text(url),
+      productType.getShareProductLabel(appLocalizations, url),
       sharePositionOrigin:
           box == null ? null : box.localToGlobal(Offset.zero) & box.size,
     );
@@ -383,6 +370,8 @@ class _ProductFooterFilledButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final SmoothColorsThemeExtension themeExtension =
         Theme.of(context).extension<SmoothColorsThemeExtension>()!;
+    final ProductPageCompatibility compatibility =
+        context.watch<ProductPageCompatibility>();
 
     return Semantics(
       excludeSemantics: true,
@@ -392,9 +381,10 @@ class _ProductFooterFilledButton extends StatelessWidget {
         onPressed: onTap,
         style: OutlinedButton.styleFrom(
           foregroundColor: Colors.white,
-          backgroundColor: context.lightTheme()
-              ? themeExtension.primaryBlack
-              : themeExtension.primarySemiDark,
+          backgroundColor: compatibility.color ??
+              (context.lightTheme()
+                  ? themeExtension.primaryBlack
+                  : themeExtension.primarySemiDark),
           side: BorderSide.none,
         ),
         child: Row(

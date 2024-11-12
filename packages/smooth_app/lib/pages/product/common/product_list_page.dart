@@ -17,7 +17,7 @@ import 'package:smooth_app/generic_lib/bottom_sheets/smooth_bottom_sheet.dart';
 import 'package:smooth_app/generic_lib/design_constants.dart';
 import 'package:smooth_app/generic_lib/duration_constants.dart';
 import 'package:smooth_app/generic_lib/loading_dialog.dart';
-import 'package:smooth_app/generic_lib/widgets/images/smooth_image.dart';
+import 'package:smooth_app/generic_lib/widgets/smooth_app_logo.dart';
 import 'package:smooth_app/generic_lib/widgets/smooth_responsive.dart';
 import 'package:smooth_app/helpers/app_helper.dart';
 import 'package:smooth_app/helpers/robotoff_insight_helper.dart';
@@ -31,6 +31,7 @@ import 'package:smooth_app/pages/product/common/product_refresher.dart';
 import 'package:smooth_app/pages/product_list_user_dialog_helper.dart';
 import 'package:smooth_app/pages/scan/carousel/scan_carousel_manager.dart';
 import 'package:smooth_app/query/product_query.dart';
+import 'package:smooth_app/query/search_products_manager.dart';
 import 'package:smooth_app/resources/app_icons.dart' as icons;
 import 'package:smooth_app/themes/theme_provider.dart';
 import 'package:smooth_app/widgets/smooth_app_bar.dart';
@@ -74,6 +75,10 @@ class _ProductListPageState extends State<ProductListPage>
   final ProductListItemPopupItem _rankItems = ProductListItemPopupRank();
   final ProductListItemPopupItem _sideBySideItems =
       ProductListItemPopupSideBySide();
+  final ProductListItemPopupItem _selectAllItems =
+      ProductListItemPopupSelectAll();
+  final ProductListItemPopupItem _selectNoneItems =
+      ProductListItemPopupUnselectAll();
 
   //returns bool to handle WillPopScope
   Future<bool> _handleUserBacktap() async {
@@ -144,7 +149,8 @@ class _ProductListPageState extends State<ProductListPage>
                 ? null
                 : FloatingActionButton.extended(
                     onPressed: () => setState(() => _selectionMode = true),
-                    label: const Text('Multi-select'),
+                    label:
+                        Text(appLocalizations.user_lists_action_multi_select),
                     icon: const Icon(Icons.checklist),
                   ),
         appBar: SmoothAppBar(
@@ -180,7 +186,9 @@ class _ProductListPageState extends State<ProductListPage>
           onLeaveActionMode: () {
             setState(() => _selectionMode = false);
           },
-          actionModeTitle: Text('${_selectedBarcodes.length}'),
+          actionModeTitle: Text(
+            appLocalizations.multiselect_title(_selectedBarcodes.length),
+          ),
           actionModeActions: <Widget>[
             SmoothPopupMenuButton<ProductListItemPopupItem>(
               onSelected: (final ProductListItemPopupItem action) async {
@@ -211,6 +219,14 @@ class _ProductListPageState extends State<ProductListPage>
                   _selectedBarcodes.length >= 2,
                 ),
                 _deleteItems.getMenuItem(
+                  appLocalizations,
+                  _selectedBarcodes.isNotEmpty,
+                ),
+                _selectAllItems.getMenuItem(
+                  appLocalizations,
+                  _selectedBarcodes.length < productList.barcodes.length,
+                ),
+                _selectNoneItems.getMenuItem(
                   appLocalizations,
                   _selectedBarcodes.isNotEmpty,
                 ),
@@ -455,19 +471,24 @@ class _ProductListPageState extends State<ProductListPage>
       for (final MapEntry<ProductType, List<String>> entry
           in productTypes.entries) {
         final SearchResult searchResult =
-            await OpenFoodAPIClient.searchProducts(
+            await SearchProductsManager.searchProducts(
           ProductQuery.getReadUser(),
           ProductRefresher().getBarcodeListQueryConfiguration(
             entry.value,
             language,
           ),
           uriHelper: ProductQuery.getUriProductHelper(productType: entry.key),
+          type: SearchProductsType.live,
         );
         final List<Product>? freshProducts = searchResult.products;
         if (freshProducts == null) {
           fresh = false;
         } else {
-          await DaoProduct(localDatabase).putAll(freshProducts, language);
+          await DaoProduct(localDatabase).putAll(
+            freshProducts,
+            language,
+            productType: entry.key,
+          );
           localDatabase.upToDate.setLatestDownloadedProducts(freshProducts);
         }
       }

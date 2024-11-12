@@ -42,6 +42,7 @@ class SummaryCard extends StatefulWidget {
     this._productPreferences, {
     this.isFullVersion = false,
     this.showQuestionsBanner = false,
+    this.showCompatibilityHeader = true,
     this.isRemovable = true,
     this.isSettingVisible = true,
     this.isProductEditable = true,
@@ -74,6 +75,9 @@ class SummaryCard extends StatefulWidget {
   /// If true, all chips / groups are clickable
   final bool attributeGroupsClickable;
 
+  /// If true, the compatibility header will be shown
+  final bool showCompatibilityHeader;
+
   final EdgeInsetsGeometry? padding;
 
   /// An optional shadow to apply to the card
@@ -94,9 +98,9 @@ class _SummaryCardState extends State<SummaryCard> with UpToDateMixin {
     initUpToDate(widget._product, context.read<LocalDatabase>());
     _questionsLayout = getUserQuestionsLayout(context.read<UserPreferences>());
     if (ProductIncompleteCard.isProductIncomplete(upToDateProduct)) {
-      AnalyticsHelper.trackEvent(
+      AnalyticsHelper.trackProductEvent(
         AnalyticsEvent.showFastTrackProductEditCard,
-        barcode: barcode,
+        product: widget._product,
       );
     }
   }
@@ -107,11 +111,13 @@ class _SummaryCardState extends State<SummaryCard> with UpToDateMixin {
     refreshUpToDate();
     if (widget.isFullVersion) {
       return buildProductSmoothCard(
-        header: ProductCompatibilityHeader(
-          product: upToDateProduct,
-          productPreferences: widget._productPreferences,
-          isSettingVisible: widget.isSettingVisible,
-        ),
+        header: widget.showCompatibilityHeader
+            ? ProductCompatibilityHeader(
+                product: upToDateProduct,
+                productPreferences: widget._productPreferences,
+                isSettingVisible: widget.isSettingVisible,
+              )
+            : null,
         body: Padding(
           padding: widget.padding ?? SMOOTH_CARD_PADDING,
           child: _buildSummaryCardContent(context),
