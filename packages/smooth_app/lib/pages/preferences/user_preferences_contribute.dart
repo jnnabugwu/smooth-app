@@ -106,6 +106,10 @@ class UserPreferencesContribute extends AbstractUserPreferences {
           );
           },
           Icons.language,
+          icon: UserPreferencesListTile.getTintedIcon(
+            Icons.open_in_new,
+            context,
+          ),          
           externalLink: true,
         ),        
         if (GlobalVars.appStore.getEnrollInBetaURL() != null)
@@ -334,7 +338,7 @@ class UserPreferencesContribute extends AbstractUserPreferences {
     );
   }
   Future<String> returnCountry(BuildContext context) async  {
-    final locale = Localizations.localeOf(context);
+    final Locale locale = Localizations.localeOf(context);
     if(locale.countryCode == null){
       final Country country = await IsoCountries.isoCountryForCodeForLocale('FR');
       return country.name;
