@@ -101,17 +101,15 @@ class UserPreferencesContribute extends AbstractUserPreferences {
           () async {
             final String country = await returnCountry(context);
             final TmpCountryWikiLinks links = TmpCountryWikiLinks();
-            LaunchUrlHelper.launchURL(
-            links.wikiLinks[country] ?? 'France'
-          );
+            LaunchUrlHelper.launchURL(links.wikiLinks[country] ?? 'France');
           },
           Icons.language,
           icon: UserPreferencesListTile.getTintedIcon(
             Icons.open_in_new,
             context,
-          ),          
+          ),
           externalLink: true,
-        ),        
+        ),
         if (GlobalVars.appStore.getEnrollInBetaURL() != null)
           _getListTile(
             appLocalizations.contribute_enroll_alpha,
@@ -337,14 +335,17 @@ class UserPreferencesContribute extends AbstractUserPreferences {
       builder: (_) => tile,
     );
   }
-  Future<String> returnCountry(BuildContext context) async  {
+
+  Future<String> returnCountry(BuildContext context) async {
     final Locale locale = Localizations.localeOf(context);
-    if(locale.countryCode == null){
-      final Country country = await IsoCountries.isoCountryForCodeForLocale('FR');
+    if (locale.countryCode == null) {
+      final Country country =
+          await IsoCountries.isoCountryForCodeForLocale('FR');
       return country.name;
-    } else{
-    final Country country = await IsoCountries.isoCountryForCodeForLocale(locale.countryCode);
-    return country.name;
+    } else {
+      final Country country =
+          await IsoCountries.isoCountryForCodeForLocale(locale.countryCode);
+      return country.name;
     }
   }
 }
