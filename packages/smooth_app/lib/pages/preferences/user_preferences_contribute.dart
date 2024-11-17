@@ -96,6 +96,18 @@ class UserPreferencesContribute extends AbstractUserPreferences {
           () async => _share(appLocalizations.contribute_share_content),
           Icons.adaptive.share,
         ),
+        _getListTile(
+          appLocalizations.help_improve_country,
+          () async {
+            final String country = await returnCountry(context);
+            final TmpCountryWikiLinks links = TmpCountryWikiLinks();
+            LaunchUrlHelper.launchURL(
+            links.wikiLinks[country] ?? 'France'
+          );
+          },
+          Icons.language,
+          externalLink: true,
+        ),        
         if (GlobalVars.appStore.getEnrollInBetaURL() != null)
           _getListTile(
             appLocalizations.contribute_enroll_alpha,
@@ -321,11 +333,15 @@ class UserPreferencesContribute extends AbstractUserPreferences {
       builder: (_) => tile,
     );
   }
-  Future<String> returnCountry() async  {
-    print('Getting country');
-    final Country country = await IsoCountries.isoCountryForCodeForLocale(countryCode);
-    print(country.name);
+  Future<String> returnCountry(BuildContext context) async  {
+    final locale = Localizations.localeOf(context);
+    if(locale.countryCode == null){
+      final Country country = await IsoCountries.isoCountryForCodeForLocale('FR');
+      return country.name;
+    } else{
+    final Country country = await IsoCountries.isoCountryForCodeForLocale(locale.countryCode);
     return country.name;
+    }
   }
 }
 
