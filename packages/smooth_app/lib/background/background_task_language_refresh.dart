@@ -7,6 +7,7 @@ import 'package:smooth_app/background/operation_type.dart';
 import 'package:smooth_app/database/dao_product.dart';
 import 'package:smooth_app/database/local_database.dart';
 import 'package:smooth_app/query/product_query.dart';
+import 'package:smooth_app/query/search_products_manager.dart';
 
 /// Background task about downloading products to translate.
 class BackgroundTaskLanguageRefresh extends BackgroundTask {
@@ -58,20 +59,22 @@ class BackgroundTaskLanguageRefresh extends BackgroundTask {
       );
 
   static Future<void> addTask(
-    final LocalDatabase localDatabase, {
-    final List<String> excludeBarcodes = const <String>[],
-    final ProductType? productType,
-  }) async {
-    if (productType == null) {
-      for (final ProductType item in ProductType.values) {
-        await addTask(
-          localDatabase,
-          excludeBarcodes: excludeBarcodes,
-          productType: item,
-        );
-      }
-      return;
+    final LocalDatabase localDatabase,
+  ) async {
+    for (final ProductType productType in ProductType.values) {
+      await _addTask(
+        localDatabase,
+        excludeBarcodes: <String>[],
+        productType: productType,
+      );
     }
+  }
+
+  static Future<void> _addTask(
+    final LocalDatabase localDatabase, {
+    required final List<String> excludeBarcodes,
+    required final ProductType productType,
+  }) async {
     final String uniqueId = await _operationType.getNewKey(
       localDatabase,
       productType: productType,
@@ -127,7 +130,8 @@ class BackgroundTaskLanguageRefresh extends BackgroundTask {
     if (barcodes.isEmpty) {
       return;
     }
-    final SearchResult searchResult = await OpenFoodAPIClient.searchProducts(
+    final SearchResult searchResult =
+        await SearchProductsManager.searchProducts(
       getUser(),
       ProductSearchQueryConfiguration(
         fields: ProductQuery.fields,
@@ -141,13 +145,18 @@ class BackgroundTaskLanguageRefresh extends BackgroundTask {
         version: ProductQuery.productQueryVersion,
       ),
       uriHelper: _uriProductHelper,
+      type: SearchProductsType.background,
     );
     if (searchResult.products == null || searchResult.count == null) {
       throw Exception('Cannot refresh language');
     }
 
     // save into database and refresh all visible products.
-    await daoProduct.putAll(searchResult.products!, language);
+    await daoProduct.putAll(
+      searchResult.products!,
+      language,
+      productType: productType,
+    );
     localDatabase.upToDate.setLatestDownloadedProducts(searchResult.products!);
 
     // Next page
@@ -160,9 +169,10 @@ class BackgroundTaskLanguageRefresh extends BackgroundTask {
     for (final Product product in searchResult.products!) {
       newExcludeBarcodes.remove(product.barcode);
     }
-    await addTask(
+    await _addTask(
       localDatabase,
       excludeBarcodes: newExcludeBarcodes,
+      productType: productType,
     );
   }
 }

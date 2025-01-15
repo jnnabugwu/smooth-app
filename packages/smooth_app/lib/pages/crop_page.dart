@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 
 import 'package:crop_image/crop_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:openfoodfacts/openfoodfacts.dart';
@@ -189,6 +190,7 @@ class _CropPageState extends State<CropPage> {
                           if (!_isErasing)
                             _IconButton(
                               iconData: Icons.rotate_90_degrees_ccw_outlined,
+                              tooltip: appLocalizations.photo_rotate_left,
                               onPressed: () => setState(
                                 () {
                                   _controller.rotateLeft();
@@ -199,7 +201,6 @@ class _CropPageState extends State<CropPage> {
                           if (widget.cropHelper.enableEraser)
                             _IconButton(
                               iconData: _isErasing ? Icons.crop : Icons.brush,
-                              color: _isErasing ? null : EraserPainter.color,
                               onPressed: () => setState(
                                 () => _isErasing = !_isErasing,
                               ),
@@ -207,6 +208,7 @@ class _CropPageState extends State<CropPage> {
                           if (_isErasing)
                             _IconButton(
                               iconData: Icons.undo,
+                              tooltip: appLocalizations.photo_undo_action,
                               onPressed: _eraserModel.isEmpty
                                   ? null
                                   : () => setState(
@@ -216,6 +218,7 @@ class _CropPageState extends State<CropPage> {
                           if (!_isErasing)
                             _IconButton(
                               iconData: Icons.rotate_90_degrees_cw_outlined,
+                              tooltip: appLocalizations.photo_rotate_right,
                               onPressed: () => setState(
                                 () {
                                   _controller.rotateRight();
@@ -465,9 +468,10 @@ class _CropPageState extends State<CropPage> {
     try {
       final CropParameters? cropParameters = await _saveImage();
       if (cropParameters != null) {
-        if (mounted) {
+        /// Checking if the context is still mounted is not enough here
+        SchedulerBinding.instance.addPostFrameCallback((_) {
           Navigator.of(context).pop<CropParameters>(cropParameters);
-        }
+        });
       }
     } catch (e) {
       await _showExceptionDialog(e);
@@ -548,20 +552,31 @@ class _IconButton extends StatelessWidget {
   const _IconButton({
     required this.iconData,
     required this.onPressed,
-    this.color,
+    this.tooltip,
   });
 
   final IconData iconData;
   final VoidCallback? onPressed;
-  final Color? color;
+  final String? tooltip;
 
   @override
-  Widget build(BuildContext context) => ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(shape: const CircleBorder()),
-        child: Icon(
-          iconData,
-          color: color,
-        ),
+  Widget build(BuildContext context) {
+    final Widget icon = ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(shape: const CircleBorder()),
+      child: Icon(
+        iconData,
+        semanticLabel: tooltip,
+      ),
+    );
+
+    if (tooltip != null) {
+      return Tooltip(
+        message: tooltip,
+        child: icon,
       );
+    } else {
+      return icon;
+    }
+  }
 }

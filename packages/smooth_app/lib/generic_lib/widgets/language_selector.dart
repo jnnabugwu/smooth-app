@@ -20,7 +20,9 @@ class LanguageSelector extends StatelessWidget {
     this.foregroundColor,
     this.icon,
     this.padding,
+    this.borderRadius,
     this.product,
+    this.checkedIcon,
   });
 
   /// What to do when the language is selected.
@@ -33,13 +35,15 @@ class LanguageSelector extends StatelessWidget {
   final OpenFoodFactsLanguage? displayedLanguage;
 
   final Color? foregroundColor;
-  final IconData? icon;
+  final Widget? icon;
   final EdgeInsetsGeometry? padding;
+  final BorderRadius? borderRadius;
+  final Widget? checkedIcon;
 
   /// Product from which we can extract the languages that matter.
   final Product? product;
 
-  static const Languages _languages = Languages();
+  static final Languages _languages = Languages();
 
   @override
   Widget build(BuildContext context) {
@@ -57,14 +61,22 @@ class LanguageSelector extends StatelessWidget {
       selectedLanguages: selectedLanguages,
       daoStringList: daoStringList,
     );
+
+    final TextStyle textStyle = Theme.of(context)
+            .textTheme
+            .bodyMedium
+            ?.copyWith(color: foregroundColor) ??
+        TextStyle(color: foregroundColor);
+
     return Material(
       type: MaterialType.transparency,
       child: InkWell(
         onTap: () async {
-          final OpenFoodFactsLanguage? language = await _openLanguageSelector(
+          final OpenFoodFactsLanguage? language = await openLanguageSelector(
             context,
             selectedLanguages: selectedLanguages,
             languagePriority: languagePriority,
+            checkedIcon: checkedIcon,
           );
           if (language != null) {
             await daoStringList.add(
@@ -74,7 +86,7 @@ class LanguageSelector extends StatelessWidget {
           }
           await setLanguage(language);
         },
-        borderRadius: ANGULAR_BORDER_RADIUS,
+        borderRadius: borderRadius ?? ANGULAR_BORDER_RADIUS,
         child: Padding(
           padding: const EdgeInsets.symmetric(
             vertical: SMALL_SPACE,
@@ -95,17 +107,15 @@ class LanguageSelector extends StatelessWidget {
                     _getCompleteName(language),
                     softWrap: false,
                     overflow: TextOverflow.fade,
-                    style: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.copyWith(color: foregroundColor) ??
-                        TextStyle(color: foregroundColor),
+                    style: textStyle,
                   ),
                 ),
               ),
-              Icon(
-                icon ?? Icons.arrow_drop_down,
-                color: foregroundColor,
+              IconTheme(
+                data: IconThemeData(
+                  color: foregroundColor ?? textStyle.color,
+                ),
+                child: icon ?? const Icon(Icons.arrow_drop_down),
               ),
             ],
           ),
@@ -117,10 +127,12 @@ class LanguageSelector extends StatelessWidget {
   /// Returns the language selected by the user.
   ///
   /// [selectedLanguages] have a specific "more important" display.
-  Future<OpenFoodFactsLanguage?> _openLanguageSelector(
+  // TODO(g123k): Improve the language selector to usable without the Widget
+  static Future<OpenFoodFactsLanguage?> openLanguageSelector(
     final BuildContext context, {
     final Iterable<OpenFoodFactsLanguage>? selectedLanguages,
     required final LanguagePriority languagePriority,
+    final Widget? checkedIcon,
   }) async {
     final ScrollController scrollController = ScrollController();
     final AppLocalizations appLocalizations = AppLocalizations.of(context);
@@ -185,7 +197,8 @@ class LanguageSelector extends StatelessWidget {
                   selectedLanguages.contains(language);
               return ListTile(
                 dense: true,
-                trailing: selected ? const Icon(Icons.check) : null,
+                trailing:
+                    selected ? (checkedIcon ?? const Icon(Icons.check)) : null,
                 title: TextHighlighter(
                   text: _getCompleteName(language),
                   filter: languageSelectorController.text,
@@ -212,7 +225,7 @@ class LanguageSelector extends StatelessWidget {
     );
   }
 
-  String _getCompleteName(
+  static String _getCompleteName(
     final OpenFoodFactsLanguage language,
   ) {
     final String nameInLanguage = _languages.getNameInLanguage(language);

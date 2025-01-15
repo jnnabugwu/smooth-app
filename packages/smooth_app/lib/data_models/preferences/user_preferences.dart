@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smooth_app/data_models/product_preferences.dart';
 import 'package:smooth_app/pages/onboarding/onboarding_flow_navigator.dart';
 import 'package:smooth_app/pages/preferences/user_preferences_dev_mode.dart';
+import 'package:smooth_app/pages/product/product_page/footer/new_product_footer.dart';
 import 'package:smooth_app/themes/color_schemes.dart';
 import 'package:smooth_app/themes/theme_provider.dart';
 
@@ -83,10 +84,12 @@ class UserPreferences extends ChangeNotifier {
   static const String _TAG_CRASH_REPORTS = 'crash_reports';
   static const String _TAG_PRICES_FEEDBACK_FORM = 'prices_feedback_form';
   static const String _TAG_EXCLUDED_ATTRIBUTE_IDS = 'excluded_attributes';
-  static const String _TAG_USER_GROUP = '_user_group';
   static const String _TAG_UNIQUE_RANDOM = '_unique_random';
   static const String _TAG_LAZY_COUNT_PREFIX = '_lazy_count_prefix';
   static const String _TAG_LATEST_PRODUCT_TYPE = '_latest_product_type';
+  static const String _TAG_SEARCH_SHOW_PRODUCT_TYPE_FILTER =
+      '_search_show_product_type_filter';
+  static const String _TAG_PRODUCT_PAGE_ACTIONS = '_product_page_actions';
 
   /// Camera preferences
 
@@ -207,9 +210,6 @@ class UserPreferences extends ChangeNotifier {
 
   bool get userTracking =>
       _sharedPreferences.getBool(_TAG_USER_TRACKING) ?? false;
-
-  /// A random int between 0 and 10 (a naive implementation to allow A/B testing)
-  int get userGroup => _sharedPreferences.getInt(_TAG_USER_GROUP)!;
 
   /// Returns a huge random value that will be computed just once.
   Future<int> getUniqueRandom() async {
@@ -485,4 +485,39 @@ class UserPreferences extends ChangeNotifier {
           value.offTag,
         ),
       );
+
+  Future<void> setSearchProductTypeFilter(final bool visible) async {
+    await _sharedPreferences.setBool(
+        _TAG_SEARCH_SHOW_PRODUCT_TYPE_FILTER, visible);
+    notifyListeners();
+  }
+
+  bool get searchProductTypeFilterVisible =>
+      _sharedPreferences.getBool(_TAG_SEARCH_SHOW_PRODUCT_TYPE_FILTER) ?? false;
+
+  List<ProductFooterActionBar> get productPageActions {
+    final List<String>? actions =
+        _sharedPreferences.getStringList(_TAG_PRODUCT_PAGE_ACTIONS);
+
+    if (actions == null) {
+      return ProductFooterActionBar.defaultOrder();
+    }
+
+    return actions
+        .map((String action) => ProductFooterActionBar.fromKey(action))
+        .toList(growable: false);
+  }
+
+  Future<void> setProductPageActions(
+    final Iterable<ProductFooterActionBar> value,
+  ) async {
+    assert(!value.contains(ProductFooterActionBar.settings));
+    await _sharedPreferences.setStringList(
+      _TAG_PRODUCT_PAGE_ACTIONS,
+      value
+          .map((ProductFooterActionBar action) => action.key)
+          .toList(growable: false),
+    );
+    notifyListeners();
+  }
 }

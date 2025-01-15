@@ -8,10 +8,15 @@ import 'package:smooth_app/data_models/up_to_date_mixin.dart';
 import 'package:smooth_app/database/local_database.dart';
 import 'package:smooth_app/generic_lib/design_constants.dart';
 import 'package:smooth_app/generic_lib/widgets/smooth_card.dart';
+import 'package:smooth_app/helpers/product_cards_helper.dart';
 import 'package:smooth_app/knowledge_panel/knowledge_panels/knowledge_panel_expanded_card.dart';
 import 'package:smooth_app/knowledge_panel/knowledge_panels_builder.dart';
 import 'package:smooth_app/pages/product/common/product_refresher.dart';
+import 'package:smooth_app/pages/product/product_field_editor.dart';
 import 'package:smooth_app/pages/scan/carousel/scan_carousel_manager.dart';
+import 'package:smooth_app/themes/smooth_theme.dart';
+import 'package:smooth_app/themes/smooth_theme_colors.dart';
+import 'package:smooth_app/themes/theme_provider.dart';
 import 'package:smooth_app/widgets/smooth_app_bar.dart';
 import 'package:smooth_app/widgets/smooth_scaffold.dart';
 
@@ -41,7 +46,8 @@ class _KnowledgePanelPageState extends State<KnowledgePanelPage>
   }
 
   static KnowledgePanelPanelGroupElement? _groupElementOf(
-      BuildContext context) {
+    BuildContext context,
+  ) {
     try {
       return Provider.of<KnowledgePanelPanelGroupElement>(context);
     } catch (_) {
@@ -57,44 +63,53 @@ class _KnowledgePanelPageState extends State<KnowledgePanelPage>
     context.watch<LocalDatabase>();
     refreshUpToDate();
     return SmoothScaffold(
+      backgroundColor: context.lightTheme()
+          ? context.extension<SmoothColorsThemeExtension>().primaryLight
+          : null,
       appBar: SmoothAppBar(
         title: Semantics(
           label: _getTitleForAccessibility(appLocalizations, title),
           child: Text(
             title,
-            maxLines: 2,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
+        subTitle: Text(
+          getProductNameAndBrands(upToDateProduct, appLocalizations),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        actions: _actions(),
       ),
       body: RefreshIndicator(
         onRefresh: () => _refreshProduct(context),
-        child: CustomScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          slivers: <Widget>[
-            SliverToBoxAdapter(
-              child: Column(
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      bottom: SMALL_SPACE,
-                      top: SMALL_SPACE,
-                    ),
-                    child: SmoothCard(
-                      padding: const EdgeInsets.all(
-                        SMALL_SPACE,
-                      ),
-                      child: KnowledgePanelExpandedCard(
-                        panelId: widget.panelId,
-                        product: upToDateProduct,
-                        isInitiallyExpanded: true,
-                        isClickable: true,
-                      ),
-                    ),
+        child: Scrollbar(
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsetsDirectional.only(
+              top: SMALL_SPACE,
+              start: VERY_SMALL_SPACE,
+              end: VERY_SMALL_SPACE,
+              bottom: SMALL_SPACE + MediaQuery.viewPaddingOf(context).bottom,
+            ),
+            children: <Widget>[
+              SmoothCard(
+                padding: const EdgeInsetsDirectional.only(
+                  bottom: LARGE_SPACE,
+                ),
+                child: DefaultTextStyle.merge(
+                  style: const TextStyle(fontSize: 15.0, height: 1.5),
+                  child: KnowledgePanelExpandedCard(
+                    panelId: widget.panelId,
+                    product: upToDateProduct,
+                    isInitiallyExpanded: true,
+                    isClickable: true,
                   ),
-                ],
+                ),
               ),
-            )
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -149,6 +164,24 @@ class _KnowledgePanelPageState extends State<KnowledgePanelPage>
         productName,
       );
     }
+  }
+
+  // TODO(g123k): Improve this mechanism to be more flexible
+  List<Widget>? _actions() {
+    if (widget.panelId == 'ingredients') {
+      return <Widget>[
+        IconButton(
+          onPressed: () async => ProductFieldOcrIngredientEditor().edit(
+            context: context,
+            product: upToDateProduct,
+          ),
+          icon: const Icon(Icons.edit),
+          tooltip: AppLocalizations.of(context).ingredients_editing_title,
+        ),
+      ];
+    }
+
+    return null;
   }
 
   @override
