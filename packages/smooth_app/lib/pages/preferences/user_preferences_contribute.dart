@@ -51,6 +51,10 @@ class UserPreferencesContribute extends AbstractUserPreferences {
   @override
   Color? getHeaderColor() => const Color(0xFFFFF2DF);
 
+  OpenFoodFactsCountry country = ProductQuery.getCountry();
+
+  TmpCountryWikiLinks links  = TmpCountryWikiLinks();
+
   @override
   List<UserPreferencesItem> getChildren() => <UserPreferencesItem>[
         _getListTile(
@@ -96,12 +100,11 @@ class UserPreferencesContribute extends AbstractUserPreferences {
           () async => _share(appLocalizations.contribute_share_content),
           Icons.adaptive.share,
         ),
+        if (links.wikiLinks.containsKey(country))
         _getListTile(
           appLocalizations.help_improve_country,
           () async {
-            final String country = await returnCountry(context);
-            final TmpCountryWikiLinks links = TmpCountryWikiLinks();
-            LaunchUrlHelper.launchURL(links.wikiLinks[country] ?? 'France');
+            LaunchUrlHelper.launchURL(links.wikiLinks[country]!);
           },
           Icons.language,
           icon: UserPreferencesListTile.getTintedIcon(
@@ -109,7 +112,9 @@ class UserPreferencesContribute extends AbstractUserPreferences {
             context,
           ),
           externalLink: true,
-        ),
+        )
+          
+        ,
         if (GlobalVars.appStore.getEnrollInBetaURL() != null)
           _getListTile(
             appLocalizations.contribute_enroll_alpha,
@@ -334,19 +339,6 @@ class UserPreferencesContribute extends AbstractUserPreferences {
       labels: <String>[title],
       builder: (_) => tile,
     );
-  }
-
-  Future<String> returnCountry(BuildContext context) async {
-    final Locale locale = Localizations.localeOf(context);
-    if (locale.countryCode == null) {
-      final Country country =
-          await IsoCountries.isoCountryForCodeForLocale('FR');
-      return country.name;
-    } else {
-      final Country country =
-          await IsoCountries.isoCountryForCodeForLocale(locale.countryCode);
-      return country.name;
-    }
   }
 }
 
