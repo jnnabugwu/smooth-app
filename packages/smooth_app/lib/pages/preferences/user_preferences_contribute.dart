@@ -53,7 +53,7 @@ class UserPreferencesContribute extends AbstractUserPreferences {
 
   OpenFoodFactsCountry country = ProductQuery.getCountry();
 
-  TmpCountryWikiLinks links  = TmpCountryWikiLinks();
+  TmpCountryWikiLinks links = TmpCountryWikiLinks();
 
   @override
   List<UserPreferencesItem> getChildren() => <UserPreferencesItem>[
@@ -101,20 +101,18 @@ class UserPreferencesContribute extends AbstractUserPreferences {
           Icons.adaptive.share,
         ),
         if (links.wikiLinks.containsKey(country))
-        _getListTile(
-          appLocalizations.help_improve_country,
-          () async {
-            LaunchUrlHelper.launchURL(links.wikiLinks[country]!);
-          },
-          Icons.language,
-          icon: UserPreferencesListTile.getTintedIcon(
-            Icons.open_in_new,
-            context,
+          _getListTile(
+            appLocalizations.help_improve_country,
+            () async {
+              LaunchUrlHelper.launchURL(links.wikiLinks[country]!);
+            },
+            Icons.language,
+            icon: UserPreferencesListTile.getTintedIcon(
+              Icons.open_in_new,
+              context,
+            ),
+            externalLink: true,
           ),
-          externalLink: true,
-        )
-          
-        ,
         if (GlobalVars.appStore.getEnrollInBetaURL() != null)
           _getListTile(
             appLocalizations.contribute_enroll_alpha,
