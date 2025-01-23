@@ -100,10 +100,7 @@ class BackgroundTaskDetails extends BackgroundTaskBarcode
   @override
   (String, AlignmentGeometry)? getFloatingMessage(
           final AppLocalizations appLocalizations) =>
-      (
-        appLocalizations.product_task_background_schedule,
-        AlignmentDirectional.center,
-      );
+      null;
 
   /// Returns a new background task about changing a product.
   static BackgroundTaskDetails _getNewTask(
@@ -186,8 +183,10 @@ class BackgroundTaskDetails extends BackgroundTaskBarcode
       }
       throw Exception(
         'Could not save product - API V2'
-        ' - '
-        'status=${status.status} - errors=${status.error} ${isInvalidUser ? _getIncompleteUserData() : ''}',
+        ' - status=${status.status}'
+        ' - errors=${status.error}'
+        ' - status_verbose=${status.statusVerbose}'
+        ' ${isInvalidUser ? _getIncompleteUserData() : ''}',
       );
     }
   }

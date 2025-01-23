@@ -138,7 +138,7 @@ abstract class BackgroundTaskPrice extends BackgroundTask {
           final AppLocalizations appLocalizations) =>
       (
         appLocalizations.add_price_queued,
-        AlignmentDirectional.center,
+        AlignmentDirectional.bottomCenter,
       );
 
   @protected
@@ -188,7 +188,7 @@ abstract class BackgroundTaskPrice extends BackgroundTask {
         ..productCode = barcodes[i];
 
       // create price
-      final MaybeError<Price> addedPrice =
+      final MaybeError<Price?> addedPrice =
           await OpenPricesAPIClient.createPrice(
         price: newPrice,
         bearerToken: bearerToken,
