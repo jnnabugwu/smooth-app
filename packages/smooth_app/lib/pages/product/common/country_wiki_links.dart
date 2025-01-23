@@ -4,7 +4,7 @@ import 'package:openfoodfacts/openfoodfacts.dart';
 class TmpCountryWikiLinks {
   final Map<OpenFoodFactsCountry, String> wikiLinks =
       <OpenFoodFactsCountry, String>{
-    OpenFoodFactsCountry.ALGERIA:
+    OpenFoodFactsCountry.ARGENTINA:
         'https://wiki.openfoodfacts.org/Country_Support_-_Argentina',
     OpenFoodFactsCountry.AUSTRALIA:
         'https://wiki.openfoodfacts.org/Country_Support_-_Australia',
