@@ -18,6 +18,8 @@ SmoothAppBar buildEditProductAppBar({
   required final BuildContext context,
   required final String title,
   required final Product product,
+  final PreferredSizeWidget? bottom,
+  final List<Widget>? actions,
 }) =>
     SmoothAppBar(
       centerTitle: false,
@@ -31,6 +33,8 @@ SmoothAppBar buildEditProductAppBar({
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
+      actions: actions,
+      bottom: bottom,
       ignoreSemanticsForSubtitle: true,
     );
 
@@ -82,7 +86,7 @@ String formatProductBrands(String brands) {
 }
 
 /// Padding to be used while building the SmoothCard on any Product card.
-const EdgeInsets SMOOTH_CARD_PADDING = EdgeInsets.symmetric(
+const EdgeInsetsGeometry SMOOTH_CARD_PADDING = EdgeInsetsDirectional.symmetric(
   horizontal: MEDIUM_SPACE,
   vertical: VERY_SMALL_SPACE,
 );
@@ -97,6 +101,7 @@ Widget buildProductSmoothCard({
   EdgeInsetsGeometry? margin = const EdgeInsets.symmetric(
     horizontal: SMALL_SPACE,
   ),
+  BorderRadius? borderRadius,
 }) {
   assert(
     (header != null && title == null) || header == null,
@@ -131,6 +136,7 @@ Widget buildProductSmoothCard({
   return SmoothCard(
     margin: margin,
     padding: padding,
+    borderRadius: borderRadius,
     child: child,
   );
 }
@@ -302,17 +308,27 @@ List<Attribute> getFilteredAttributes(
 
 Widget addPanelButton(
   final String label, {
-  final IconData? iconData,
+  final Widget? leadingIcon,
+  final Widget? trailingIcon,
   final String? textAlign,
+  final EdgeInsetsGeometry? padding,
   required final Function() onPressed,
+  BorderRadiusGeometry? borderRadius,
+  WidgetStateProperty<double?>? elevation,
 }) =>
     Padding(
       padding: const EdgeInsets.symmetric(vertical: SMALL_SPACE),
       child: SmoothLargeButtonWithIcon(
         text: label,
-        icon: iconData ?? Icons.add,
+        leadingIcon: leadingIcon,
+        trailingIcon: trailingIcon,
+        borderRadius: borderRadius,
+        elevation: elevation,
         onPressed: onPressed,
-        textAlign: iconData == null ? TextAlign.center : null,
+        textAlign: leadingIcon == null && trailingIcon == null
+            ? TextAlign.center
+            : null,
+        padding: padding,
       ),
     );
 

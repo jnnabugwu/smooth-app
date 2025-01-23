@@ -7,11 +7,15 @@ class SmoothColorsThemeExtension
     required this.primaryBlack,
     required this.primaryDark,
     required this.primarySemiDark,
+    required this.primaryTone,
     required this.primaryNormal,
     required this.primaryMedium,
     required this.primaryLight,
     required this.secondaryNormal,
     required this.secondaryLight,
+    required this.error,
+    required this.warning,
+    required this.success,
     required this.green,
     required this.orange,
     required this.red,
@@ -21,15 +25,19 @@ class SmoothColorsThemeExtension
   });
 
   SmoothColorsThemeExtension.defaultValues()
-      : primaryUltraBlack = const Color(0xFF52443D),
+      : primaryUltraBlack = const Color(0xFF201A17),
         primaryBlack = const Color(0xFF341100),
         primaryDark = const Color(0xFF483527),
         primarySemiDark = const Color(0xFF52443D),
+        primaryTone = const Color(0xFF81756C),
         primaryNormal = const Color(0xFFA08D84),
         primaryMedium = const Color(0xFFEDE0DB),
         primaryLight = const Color(0xFFF6F3F0),
         secondaryNormal = const Color(0xFFF2994A),
         secondaryLight = const Color(0xFFEE8858),
+        success = const Color(0xFF219653),
+        warning = const Color(0xFFFB8229),
+        error = const Color(0xFFEB5757),
         green = const Color(0xFF219653),
         orange = const Color(0xFFFB8229),
         red = const Color(0xFFEB5757),
@@ -49,6 +57,9 @@ class SmoothColorsThemeExtension
   // Mocha
   final Color primarySemiDark;
 
+  // Darker Macchiato (from old palette)
+  final Color primaryTone;
+
   // Macchiato
   final Color primaryNormal;
 
@@ -59,6 +70,11 @@ class SmoothColorsThemeExtension
   final Color primaryLight;
   final Color secondaryNormal;
   final Color secondaryLight;
+
+  final Color error;
+  final Color warning;
+  final Color success;
+
   final Color green;
   final Color orange;
   final Color red;
@@ -72,11 +88,15 @@ class SmoothColorsThemeExtension
     Color? primaryBlack,
     Color? primaryDark,
     Color? primarySemiDark,
+    Color? primaryTone,
     Color? primaryNormal,
     Color? primaryMedium,
     Color? primaryLight,
     Color? secondaryNormal,
     Color? secondaryLight,
+    Color? error,
+    Color? warning,
+    Color? success,
     Color? green,
     Color? orange,
     Color? red,
@@ -89,11 +109,15 @@ class SmoothColorsThemeExtension
       primaryBlack: primaryBlack ?? this.primaryBlack,
       primaryDark: primaryDark ?? this.primaryDark,
       primarySemiDark: primarySemiDark ?? this.primarySemiDark,
+      primaryTone: primaryTone ?? this.primaryTone,
       primaryNormal: primaryNormal ?? this.primaryNormal,
       primaryMedium: primaryMedium ?? this.primaryMedium,
       primaryLight: primaryLight ?? this.primaryLight,
       secondaryNormal: secondaryNormal ?? this.secondaryNormal,
       secondaryLight: secondaryLight ?? this.secondaryLight,
+      error: error ?? this.error,
+      warning: warning ?? this.warning,
+      success: success ?? this.success,
       green: green ?? this.green,
       orange: orange ?? this.orange,
       red: red ?? this.red,
@@ -133,6 +157,11 @@ class SmoothColorsThemeExtension
         other.primarySemiDark,
         t,
       )!,
+      primaryTone: Color.lerp(
+        primaryTone,
+        other.primaryTone,
+        t,
+      )!,
       primaryNormal: Color.lerp(
         primaryNormal,
         other.primaryNormal,
@@ -156,6 +185,21 @@ class SmoothColorsThemeExtension
       secondaryLight: Color.lerp(
         secondaryLight,
         other.secondaryLight,
+        t,
+      )!,
+      error: Color.lerp(
+        error,
+        other.error,
+        t,
+      )!,
+      warning: Color.lerp(
+        warning,
+        other.warning,
+        t,
+      )!,
+      success: Color.lerp(
+        success,
+        other.success,
         t,
       )!,
       green: Color.lerp(

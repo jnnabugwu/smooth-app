@@ -20,8 +20,11 @@ import 'package:visibility_detector/visibility_detector.dart';
 
 class ProductHeader extends StatefulWidget {
   const ProductHeader({
+    this.backButtonType,
     super.key,
   });
+
+  final ProductPageBackButton? backButtonType;
 
   @override
   State<ProductHeader> createState() => _ProductHeaderState();
@@ -30,6 +33,7 @@ class ProductHeader extends StatefulWidget {
 class _ProductHeaderState extends State<ProductHeader> {
   double _titleOpacity = 0.0;
   double _compatibilityScoreOpacity = 0.0;
+  double _shadow = 0.0;
 
   @override
   Widget build(BuildContext context) {
@@ -46,13 +50,20 @@ class _ProductHeaderState extends State<ProductHeader> {
         ) =>
             _onScroll(scrollController),
         child: Consumer<ProductPageCompatibility>(
-          builder: (BuildContext context,
-              ProductPageCompatibility productCompatibility, _) {
+          builder: (
+            BuildContext context,
+            ProductPageCompatibility productCompatibility,
+            _,
+          ) {
+            final Color tintColor = productCompatibility.color ??
+                Theme.of(context)
+                    .extension<SmoothColorsThemeExtension>()!
+                    .greyNormal;
+
             return Material(
-              color: productCompatibility.color ??
-                  Theme.of(context)
-                      .extension<SmoothColorsThemeExtension>()!
-                      .greyNormal,
+              color: tintColor,
+              shadowColor: tintColor,
+              elevation: _shadow,
               child: DefaultTextStyle.merge(
                 style: const TextStyle(color: Colors.white),
                 child: IconTheme(
@@ -63,7 +74,9 @@ class _ProductHeaderState extends State<ProductHeader> {
                       padding: EdgeInsetsDirectional.only(top: statusBarHeight),
                       child: Row(
                         children: <Widget>[
-                          const _ProductHeaderBackButton(),
+                          _ProductHeaderBackButton(
+                            backButtonType: widget.backButtonType,
+                          ),
                           Expanded(
                             child: Offstage(
                               offstage: _titleOpacity == 0.0,
@@ -103,11 +116,18 @@ class _ProductHeaderState extends State<ProductHeader> {
       LARGE_SPACE + kToolbarHeight * 2,
       1.0,
     );
+    final double shadow = scrollController.offset.progressAndClamp(
+      0.0,
+      kToolbarHeight / 2,
+      2.0,
+    );
 
     if (_titleOpacity != titleOpacity ||
-        _compatibilityScoreOpacity != compatibilityScoreOpacity) {
+        _compatibilityScoreOpacity != compatibilityScoreOpacity ||
+        _shadow != shadow) {
       _titleOpacity = titleOpacity;
       _compatibilityScoreOpacity = compatibilityScoreOpacity;
+      _shadow = shadow;
 
       // Calling setState() may already be in a build() call
       SchedulerBinding.instance.addPostFrameCallback((_) {
@@ -131,7 +151,11 @@ class _ProductHeaderState extends State<ProductHeader> {
 }
 
 class _ProductHeaderBackButton extends StatelessWidget {
-  const _ProductHeaderBackButton();
+  const _ProductHeaderBackButton({
+    this.backButtonType,
+  });
+
+  final ProductPageBackButton? backButtonType;
 
   @override
   Widget build(BuildContext context) {
@@ -149,7 +173,9 @@ class _ProductHeaderBackButton extends StatelessWidget {
               Navigator.of(context).maybePop();
             },
             child: SizedBox.expand(
-              child: Icon(ConstantIcons.instance.getBackIcon()),
+              child: backButtonType == ProductPageBackButton.minimize
+                  ? const icons.Chevron.down(size: 16.0)
+                  : Icon(ConstantIcons.backIcon),
             ),
           ),
         ),
@@ -181,8 +207,11 @@ class _ProductHeaderName extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 18.0,
-                height: 0.9,
+                fontSize: 17.0,
+                height: 1.0,
+              ),
+              strutStyle: const StrutStyle(
+                forceStrutHeight: true,
               ),
             ),
             Text(
@@ -221,7 +250,7 @@ class _ProductCompatibilityScore extends StatelessWidget {
 
     final String tooltipMessage =
         AppLocalizations.of(context).product_page_compatibility_score_tooltip(
-      compatibility.score!.toInt(),
+      compatibility.score!,
     );
 
     return Semantics(
@@ -260,6 +289,9 @@ class _ProductCompatibilityScore extends StatelessWidget {
     BuildContext context,
     ProductPageCompatibility compatibility,
   ) {
+    final String compatibilityLabel =
+        AppLocalizations.of(context).product_page_compatibility_score;
+
     return IntrinsicHeight(
       child: Row(
         children: <Widget>[
@@ -288,15 +320,20 @@ class _ProductCompatibilityScore extends StatelessWidget {
           ),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.only(
+              padding: const EdgeInsetsDirectional.only(
                 top: 6.0,
-                bottom: 8.0,
+                bottom: SMALL_SPACE,
+                start: 6.0,
+                end: 6.0,
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   Text(
-                    '${compatibility.score!.toInt()}%',
+                    '${compatibility.score}%',
+                    maxLines: 1,
+                    textAlign: TextAlign.center,
+                    textScaler: TextScaler.noScaling,
                     style: const TextStyle(
                       fontSize: 12.0,
                       height: 0.9,
@@ -304,10 +341,13 @@ class _ProductCompatibilityScore extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    AppLocalizations.of(context)
-                        .product_page_compatibility_score,
-                    style: const TextStyle(
-                      fontSize: 9.0,
+                    compatibilityLabel,
+                    maxLines: 1,
+                    textAlign: TextAlign.center,
+                    overflow: TextOverflow.fade,
+                    textScaler: TextScaler.noScaling,
+                    style: TextStyle(
+                      fontSize: _getCompatibilityFontSize(compatibilityLabel),
                       height: 0.9,
                       fontWeight: FontWeight.w500,
                     ),
@@ -321,10 +361,53 @@ class _ProductCompatibilityScore extends StatelessWidget {
     );
   }
 
+  double _getCompatibilityFontSize(String compatibilityLabel) {
+    final int length = compatibilityLabel.length;
+
+    if (length < 13) {
+      return 9.0;
+    } else if (length == 13) {
+      return 8.5;
+    } else if (length == 14) {
+      return 7.5;
+    } else if (length == 15) {
+      return 7.0;
+    } else if (length == 16) {
+      return 6.5;
+    } else {
+      return 6.0;
+    }
+  }
+
   double computeWidth(BuildContext context) {
     return math.min(
       80.0,
       (MediaQuery.sizeOf(context).width - PADDING.horizontal) * (18 / 100),
     );
+  }
+}
+
+enum ProductPageBackButton {
+  back,
+  minimize;
+
+  static ProductPageBackButton? byName(String? type) {
+    return switch (type) {
+      'back' => ProductPageBackButton.back,
+      'minimize' => ProductPageBackButton.minimize,
+      _ => null,
+    };
+  }
+}
+
+enum ProductPageTransition {
+  standard,
+  slideUp;
+
+  static ProductPageTransition byName(String? type) {
+    return switch (type) {
+      'slideUp' => ProductPageTransition.slideUp,
+      _ => ProductPageTransition.standard,
+    };
   }
 }

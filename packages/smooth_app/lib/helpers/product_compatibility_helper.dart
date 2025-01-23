@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:intl/intl.dart';
 import 'package:openfoodfacts/openfoodfacts.dart';
+import 'package:smooth_app/themes/smooth_theme.dart';
 import 'package:smooth_app/themes/smooth_theme_colors.dart';
 
 class ProductCompatibilityHelper {
   ProductCompatibilityHelper.product(final MatchedProductV2 product)
-      : status = product.status;
+      : status = product.status,
+        _score = product.score;
 
-  const ProductCompatibilityHelper.status(this.status);
+  const ProductCompatibilityHelper.status(this.status) : _score = null;
 
+  final double? _score;
   final MatchedProductStatusV2 status;
 
   Color getColor(BuildContext context) {
     final SmoothColorsThemeExtension theme =
-        Theme.of(context).extension<SmoothColorsThemeExtension>()!;
+        context.extension<SmoothColorsThemeExtension>();
 
     return switch (status) {
       MatchedProductStatusV2.VERY_GOOD_MATCH => theme.green,
@@ -63,5 +67,15 @@ class ProductCompatibilityHelper {
       case MatchedProductStatusV2.UNKNOWN_MATCH:
         return appLocalizations.match_short_unknown;
     }
+  }
+
+  String? getFormattedScore({bool singleDigitAllowed = false}) {
+    if (_score == null || status == MatchedProductStatusV2.UNKNOWN_MATCH) {
+      return null;
+    } else if (_score == 0 || (singleDigitAllowed && _score < 10)) {
+      return _score.toStringAsFixed(0);
+    }
+
+    return NumberFormat('00').format(_score.toInt());
   }
 }
