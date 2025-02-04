@@ -789,6 +789,7 @@
         "description": "Label to let the user choose between per 100g or per serving"
     },
     "nutrition_page_per_100g": "per 100g",
+    "nutrition_page_per_100g_100ml": "per 100g/ml",
     "nutrition_page_per_serving": "per serving",
     "nutrition_page_add_nutrient": "Add a nutrient",
     "nutrition_page_serving_size": "Serving size",
@@ -1490,6 +1491,10 @@
     },
     "edit_product_pending_operations_banner_message": "Your edits are being **sent in the background** (or later in case of error).\nYou can continue editing other product fields.",
     "@edit_product_pending_operations_banner_message": {
+        "description": "When a product has pending edits (being sent to the server), there is a message on the edit page. Please keep the ** syntax to make the text bold."
+    },
+    "edit_product_pending_operations_banner_short_message": "Your edits are being **sent in the background** (or later in case of error).",
+    "@edit_product_pending_operations_banner_short_message": {
         "description": "When a product has pending edits (being sent to the server), there is a message on the edit page. Please keep the ** syntax to make the text bold."
     },
     "edit_product_label_short": "Edit",
@@ -2520,8 +2525,83 @@
     },
     "basic_details": "Basic Details",
     "product_name": "Product Name",
-    "add_basic_details_product_name_error": "Please enter the product name",
+    "product_names": "Product Names",
+    "@product_names": {
+        "description": "Title for the section to edit the product name (in multiple languages)"
+    },
+    "add_basic_details_product_name_add_translation": "Add a new translation",
+    "@add_basic_details_product_name_add_translation": {
+        "description": "Button to add a new translation for the product name"
+    },
+    "add_basic_details_product_name_warning_translations": "Before validating, please ensure you only add a translation **if the language is not present on the packaging**",
+    "@add_basic_details_product_name_warning_translations": {
+        "description": "Warning message displayed on top of new translations for the product name"
+    },
+    "add_basic_details_product_name_open_photo": "View front photo",
+    "@add_basic_details_product_name_open_photo": {
+        "description": "Button to view the front photo of the product (on top of the screen)"
+    },
+    "add_basic_details_product_name_take_photo": "Take front photo",
+    "@add_basic_details_product_name_take_photo": {
+        "description": "Button to take a photo of the front of the product (when there is no photo yet)"
+    },
     "add_basic_details_product_name_hint": "Input the name of the product (eg: Nutella)",
+    "@add_basic_details_product_name_hint": {
+        "description": "Placeholder when the product name text-field is empty"
+    },
+    "add_basic_details_product_name_help_title": "Good practices: product name",
+    "@add_basic_details_product_name_help_title": {
+        "description": "Title for the help section about the product name"
+    },
+    "add_basic_details_product_name_help_info1": "The product name is the **main name printed on the packaging**. It can be a registered trademark.",
+    "@add_basic_details_product_name_help_info1": {
+        "description": "Text explaining how to write the product name"
+    },
+    "add_basic_details_product_name_help_info2": "**Note:** Please don't add a translation **if the language is not present on the packaging**.",
+    "@add_basic_details_product_name_help_info2": {
+        "description": "Text explaining how to write the product name"
+    },
+    "explanation_section_good_examples": "Good examples",
+    "@explanation_section_good_examples": {
+        "description": "Title for the section with good examples"
+    },
+    "explanation_section_bad_examples": "Bad examples",
+    "@explanation_section_bad_examples": {
+        "description": "Title for the section with bad examples"
+    },
+    "add_basic_details_product_name_help_good_examples_1": "Nesquik",
+    "@add_basic_details_product_name_help_good_examples_1": {
+        "description": "A 1st good example for the product name (you can change it if necessary)"
+    },
+    "add_basic_details_product_name_help_good_examples_2": "Tomato Ketchup",
+    "@add_basic_details_product_name_help_good_examples_2": {
+        "description": "A 2nd good example for the product name (you can change it if necessary)"
+    },
+    "add_basic_details_product_name_help_bad_examples_1_explanation": "Don't include the brand in the name",
+    "@add_basic_details_product_name_help_bad_examples_1_explanation": {
+        "description": "Explanation for the first bad example"
+    },
+    "add_basic_details_product_name_help_bad_examples_1_example": "Tomato Ketchup **by Heinz**",
+    "@add_basic_details_product_name_help_bad_examples_1_example": {
+        "description": "First bad example for the product name"
+    },
+    "add_basic_details_product_name_help_bad_examples_2_explanation": "Don't use symbols ®, ™, © or similar",
+    "@add_basic_details_product_name_help_bad_examples_2_explanation": {
+        "description": "Explanation for the second bad example"
+    },
+    "add_basic_details_product_name_help_bad_examples_2_example": "Nesquik**®**",
+    "@add_basic_details_product_name_help_bad_examples_2_example": {
+        "description": "Second bad example for the product name"
+    },
+    "add_basic_details_product_name_other_translations": "{count,plural, one{{count} other translation} other{{count} other translations}}",
+    "@add_basic_details_product_name_other_translations": {
+        "description": "The number of other translations for a product name (count is always >= 1)",
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
     "brand_name": "Brand name",
     "brand_names": "Brand names",
     "add_basic_details_brand_name_error": "Please enter the brand name",
@@ -3283,6 +3363,14 @@
     "@language_selector_title": {
         "description": "Label written as the title of the dialog to select the user language"
     },
+    "language_selector_section_selected": "Selected languages",
+    "@language_selector_title": {
+        "description": "Label to highlight the selected languages"
+    },
+    "language_selector_section_frequently_used": "Frequently used",
+    "@language_selector_title": {
+        "description": "Label to highlight the frequently used languages"
+    },
     "action_delete_list": "Delete",
     "@action_delete_list": {
         "description": "Delete a list action in a menu"
@@ -3452,8 +3540,12 @@
     "@photo_viewer_action_use_picture_as": {
         "description": "An action to use the current picture to be used as front/ingredients…"
     },
+    "photo_viewer_use_picture_as_tooltip": "Use this picture as…",
+    "@photo_viewer_use_picture_as_tooltip": {
+        "description": "Message explaining what the three dots (…) button on \"More interesting photos\" does"
+    },
     "photo_viewer_use_picture_as_title": "Use this picture as… ({language})",
-    "@photo_viewer_use_picture_as": {
+    "@photo_viewer_use_picture_as_title": {
         "description": "The title of a dialog to use the current picture as front/ingredients…",
         "placeholders": {
             "language": {
@@ -3737,5 +3829,45 @@
                 "type": "String"
             }
         }
+    },
+    "product_footer_action_barcode": "View barcode",
+    "@product_footer_action_barcode": {
+        "description": "Action to see the barcode of a product"
+    },
+    "product_footer_action_barcode_short": "Barcode",
+    "@product_footer_action_barcode_short": {
+        "description": "Action to see the barcode of a product (short text)"
+    },
+    "product_footer_action_open_website": "Open website",
+    "@product_footer_action_open_website": {
+        "description": "Action to see to open the OxF website of the given product"
+    },
+    "product_footer_action_report": "Report",
+    "@product_footer_action_report": {
+        "description": "Action to see to report a product"
+    },
+    "product_footer_action_contributor_guide": "Help",
+    "@product_footer_action_contributor_guide": {
+        "description": "Action to open the contributor's guide. If you are in a non-English language, please translate this sentence instead: \"Help (EN)\""
+    },
+    "product_footer_action_data_quality_tags": "Data quality",
+    "@product_footer_action_data_quality_tags": {
+        "description": "Action to view data quality warnings"
+    },
+  "all_search_prices_top_product_title": "Products with the most prices",
+  "@all_search_prices_top_product_title": {
+    "description": "Top price products: list tile title"
+  },
+  "prices_products_list_length_many_pages": "Top {pageSize} products (total: {total})",
+  "@prices_products_list_length_many_pages": {
+    "description": "Number of products for one-page result",
+    "placeholders": {
+      "pageSize": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
+  }
 }
